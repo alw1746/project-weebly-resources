@@ -33,7 +33,7 @@
 //#define TFT_PARALLEL_8_BIT
 
 // Display type -  only define if RPi display
-//#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
+#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
 
 // Only define one driver, the other ones must be commented out
 //#define ILI9341_DRIVER       // Generic driver for common displays
@@ -193,13 +193,12 @@
 // For ESP32 Dev board (only tested with ILI9341 display)
 // The hardware SPI can be mapped to any pins
 
-#define TFT_MISO 19
-#define TFT_MOSI 23
-#define TFT_SCLK 18
-#define TFT_CS    5  // Chip select control pin
-#define TFT_DC   17  // Data Command control pin
-#define TFT_RST  16  // Reset pin (could connect to RST pin)
-#define TOUCH_CS  4    // Chip select pin (T_CS) of touch screen
+//#define TFT_MISO 19
+//#define TFT_MOSI 23
+//#define TFT_SCLK 18
+//#define TFT_CS   15  // Chip select control pin
+//#define TFT_DC    2  // Data Command control pin
+//#define TFT_RST   4  // Reset pin (could connect to RST pin)
 //#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
 
 // For ESP32 Dev board (only tested with GC9A01 display)
@@ -258,10 +257,10 @@
 // ######       EDIT THE PINs BELOW TO SUIT YOUR STM32 SPI TFT SETUP        ######
 
 // The TFT can be connected to SPI port 1 or 2
-//#define TFT_SPI_PORT 1 // SPI port 1 maximum clock rate is 55MHz
-//#define TFT_MOSI PA7
-//#define TFT_MISO PA6
-//#define TFT_SCLK PA5
+#define TFT_SPI_PORT 1 // SPI port 1 maximum clock rate is 55MHz
+#define TFT_MOSI 11
+#define TFT_MISO 12
+#define TFT_SCLK 13
 
 //#define TFT_SPI_PORT 2 // SPI port 2 maximum clock rate is 27MHz
 //#define TFT_MOSI PB15
@@ -273,9 +272,10 @@
 //#define TFT_DC   D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
 //#define TFT_RST  D7 // Reset pin to TFT RST (or RESET)
 // OR alternatively, we can use STM32 port reference names PXnn
-//#define TFT_CS   PE11 // Nucleo-F767ZI equivalent of D5
-//#define TFT_DC   PE9  // Nucleo-F767ZI equivalent of D6
-//#define TFT_RST  PF13 // Nucleo-F767ZI equivalent of D7
+#define TFT_CS   10 // Nucleo-F767ZI equivalent of D5
+#define TFT_DC   A0  // Nucleo-F767ZI equivalent of D6
+#define TFT_RST  A1 // Nucleo-F767ZI equivalent of D7
+#define TOUCH_CS 3 // Chip select pin (T_CS) of touch screen
 
 //#define TFT_RST  -1   // Set TFT_RST to -1 if the display RESET is connected to processor reset
                         // Use an Arduino pin for initial testing as connecting to processor reset
@@ -321,7 +321,7 @@
 // #define SPI_FREQUENCY   1000000
 // #define SPI_FREQUENCY   5000000
 // #define SPI_FREQUENCY  10000000
- #define SPI_FREQUENCY  20000000
+// #define SPI_FREQUENCY  20000000
 // #define SPI_FREQUENCY  27000000
 // #define SPI_FREQUENCY  40000000
 // #define SPI_FREQUENCY  55000000 // STM32 SPI1 only (SPI2 maximum is 27MHz)
