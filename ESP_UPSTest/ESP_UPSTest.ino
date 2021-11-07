@@ -67,6 +67,7 @@ void IRAM_ATTR power_isr() {
 }
 
 //Adjust ADC read to compensate for non-linearity of conversion by ESP32.
+//https://bitbucket.org/Blackneron/esp32_adc/src/master/
 double analogReadAdjusted(byte pinNumber){
 
   // Specify the adjustment factors.
