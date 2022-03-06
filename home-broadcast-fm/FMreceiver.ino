@@ -31,7 +31,7 @@ Arduino port | TEA5767 signal
 #define FIX_BAND RADIO_BAND_FMWORLD
 
 /// The station that will be tuned by this sketch.
-#define FIX_STATION 8700
+#define FIX_STATION 8780
 
 TEA5767 radio;    // Create an instance of Class for radio Chip
 
