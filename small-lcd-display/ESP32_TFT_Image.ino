@@ -5,7 +5,7 @@
  https://github.com/Bodmer/TJpg_Decoder
 
  This example renders a Jpeg file that is stored in an array within Flash (program) memory
- see image.h tab.  The image image file being ~13Kbytes.
+ see image_jpg.h
 
 To convert JPG file to an array,
 http://tomeko.net/online_tools/file_to_hex.php?lang=en
