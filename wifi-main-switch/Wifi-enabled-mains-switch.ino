@@ -2,6 +2,8 @@
 Wifi-enabled Mains Switch. ESP32 hosts a web page with clickable button to switch AC power on/off via a thyristor. ESP32 wifi uses
 AP mode to act as an access point with ssid REM_MAINSW so that clients such as laptops, smartphones can connect to it directly. For clients that
 support mDNS, you can browse to rem_mainsw.local otherwise the ip address is 192.168.5.10. A pushbutton switch provides direct remote control.
+ Requirements:
+ https://github.com/mathertel/OneButton
  */
 #include <OneButton.h>
 #if defined(ARDUINO_ARCH_ESP32)
