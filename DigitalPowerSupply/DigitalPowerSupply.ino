@@ -11,6 +11,8 @@
  * SEL    select the ADJ voltage.
  * Prerequisites:
  *   LM317 power supply, Arduino Nano(5V), MCP4725 12-bit DAC, INA219 current/voltage sensor, 0.96" OLED display.
+ *   https://github.com/mathertel/OneButton
+ *   https://gist.github.com/alw1746 (for Serial_printf.h)
 */
 #include <Wire.h>
 #include <Adafruit_MCP4725.h>
