@@ -6,6 +6,8 @@
  * 2-clicks changes display to ASCII chars. Undefined chars are indicated by decimal pt(.)
  * Linear potentiometer vary delay between each bitmap display.
  * 
+ Requirements:
+ https://github.com/mathertel/OneButton
 */
 #include "OneButton.h"
 #include "bmp7seg.h"
