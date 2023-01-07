@@ -3,6 +3,8 @@
  click, doubleclick, multiclick, long press. Change pin definitions to suit. Connect button
  to GND and use internal pullup. If internal pullup not available, connect a 10K resistor
  between pin and VCC.
+ Requirements:
+ https://github.com/mathertel/OneButton
 */
 #include "OneButton.h"
 
