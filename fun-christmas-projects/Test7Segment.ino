@@ -65,11 +65,9 @@ void setup() {
   button.attachDoubleClick(click2);    //handle doubleclick
   analogRead(analogPin);               //always drop 1st read
   timer1 = millis();                   //init timer1 delay
-  printDigit(9);
 }
 
 void loop() {
-  /*
   button.tick();   //process button clicks
   if (millis() > timer1 && timer1Enabled) {       //timer delay
     period1 = analogRead(analogPin);              //get pot value for delay
@@ -92,5 +90,4 @@ void loop() {
       }
     }
   }
-  */
 }
