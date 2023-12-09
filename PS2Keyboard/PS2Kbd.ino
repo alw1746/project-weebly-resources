@@ -56,6 +56,7 @@ int main_menu_count=sizeof(main_menu_lines)/sizeof(main_menu_lines[0]);
 enum stateName {START,PIN,VALUE,PIN_WRITE,EXIT};
 enum eventName {INIT,READ_KBD,READ_COMPLETED,PIN_READ,SLEEP};
 enum modeName {ANALOG,DIGITAL};
+//enum menuName must start from START_MENU_LINE. The switch..case of menuLine relies on this ordering.
 enum menuName {DIGITAL_READ=START_MENU_LINE,DIGITAL_WRITE,ANALOG_READ,ANALOG_WRITE};
 stateName state;
 eventName event;
