@@ -34,7 +34,10 @@ void gridOLED128xNN() {
   display.drawFastVLine(col-1,0,row,WHITE);   //col is pixel count so -1 for coord
 
   display.setCursor(0,0);
-  display.println("123456789 123456789 1");
+  for (int i=0; i < 5; i++) {
+    display.print("123456789 ");
+  }
+  display.println();
   for (int y=2; y < 32; y++) {                //line count
     display.print(" ");
     display.println(y);
@@ -58,6 +61,7 @@ void setup()
   display.clearDisplay();
   display.setRotation(0);     //0=(landscape,pins top),1=(portrait,pins left),2=(land,pins bot)3=(port,pins right)
   display.setTextSize(1);
+  display.setTextWrap(false);
   display.setTextColor(WHITE);
   gridOLED128xNN();
 }
