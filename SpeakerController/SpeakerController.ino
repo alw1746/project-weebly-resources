@@ -52,11 +52,12 @@ AsyncWebServer *server;
 uint8_t WOOFstatus,MIDRstatus,TWEEstatus;
 IPAddress local_ip;
 
-//main web page is refreshed on every button click.
+//main web page is autorefreshed every 4 mins to defeat softAP inactivity disconnect timer(5mins).
 String SendHTML(uint8_t twee, uint8_t midr,uint8_t woof){
   String ptr = "<!DOCTYPE html> <html>\n";
   ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
   ptr +="<title>Speaker Connection Switch</title>\n";
+  ptr +="<meta http-equiv=\"refresh\" content=\"240\">\n";
   ptr +="<style>html { font-family: Arial; display: inline-block; margin: 0px auto; text-align: center;}\n";
   ptr +="body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;} h3 {color: #444444;margin-bottom: 50px;}\n";
   ptr +=".button {display: block;width: 120px;background-color: #3498db;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 8px;}\n";
@@ -108,7 +109,7 @@ void setup() {
 
   strncpy(config.mode,"AP",sizeof(config.mode));        //or STA 
   strncpy(config.ssid,"WhrfSpkr",sizeof(config.ssid));
-  strncpy(config.password,"<mypasswd>",sizeof(config.password));
+  strncpy(config.password,"<mypasswd>",sizeof(config.password));    //min pwd length 8.
   strncpy(config.mdnsName,"WhrfSpkr",sizeof(config.mdnsName));
   config.port = 80;
   strncpy(config.ipaddress,"192.168.5.10",sizeof(config.ipaddress));    //fixed ip address for AP
@@ -117,6 +118,7 @@ void setup() {
   if (strncmp(config.mode,"AP",2) == 0) {    //Access Point mode config
     Serial.printf("Setting up AP with ssid %s\r\n",config.ssid);
     WiFi.mode(WIFI_AP);
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);      //disable inactivity light sleep
     local_ip.fromString(config.ipaddress);
     IPAddress gateway=local_ip;
     IPAddress subnet(255,255,255,0);
@@ -130,6 +132,7 @@ void setup() {
   else if (strncmp(config.mode,"STA",3) == 0) {    //Station mode config
     Serial.printf("Connecting to ssid %s\r\n",config.ssid);
     WiFi.mode(WIFI_STA);
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
     WiFi.begin(config.ssid, config.password);
     while (WiFi.status() != WL_CONNECTED) {
       delay(1000);
