@@ -2,7 +2,7 @@
  * 3-way wireless speaker controller. Switch tweeter, midrange, woofer speakers on or off by
  * clicking on 3 buttons on a web page. Relays on the speaker cables make/break the
  * connection. Requires a ESP8266 or ESP32 module and a 4-ch relay board.
- * SSID WhrfSpkr
+ * SSID WhrfSpkr,<mypasswd>
  * mDNS WhrfSpkr.local
  * Ipaddr 192.168.5.10
  * After connecting to SSID, browse to http://WhrfSpkr.local
