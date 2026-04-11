@@ -1,8 +1,8 @@
 /*
-Measure load voltage and current(mahConsumed,Voltage) with INA219 sensor and log to serial
+Measure li-ion battery voltage and current(mahConsumed,Voltage) with INA219 sensor and log to serial
 port. These values are copied to a csv file for processing by generate_lut.py to create 
 C++ initialisation code for voltage and current lookup tables. If capacity reaches 0, 
-the battery is disconnected by P-chan MOSFET to prevent damage. 
+the load is disconnected by P-chan MOSFET to prevent damage. 
 */
 #include <Wire.h>
 #include <INA219_WE.h>
