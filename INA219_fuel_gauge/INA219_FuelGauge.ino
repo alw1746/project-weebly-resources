@@ -1,7 +1,7 @@
 /*
 Single cell lithium battery fuel gauge based on coulomb counting(1mAh = 3.6 coulombs) with
 drift compensated by voltage measurement. Voltage and current readings are provided
-by INA219 sensor. If capacity reaches 0, the battery is disconnected by P-chan MOSFET
+by INA219 sensor. If capacity reaches 0, the load is disconnected by P-chan MOSFET
 to prevent damage. The mahConsumed value is saved to flash on every mAh change and restored on power up.
 Voltage and mahConsumed lookup tables are derived from profiling the battery through INA219_profiler
 sketch. The CSV output is processed by generate_lut.py which generates the C++ array initialisation
