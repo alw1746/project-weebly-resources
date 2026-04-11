@@ -77,14 +77,14 @@ def generate_battery_lut(csv_file, max_v, min_v):
     print("="*40 + "\n")
 
     # Function 1: Voltage Table
-    print("void Battery::initVoltageTable() {")
+    print("void initVoltageTable() {")
     for p in range(101):
         # formatted with >3 for clean vertical alignment
         print(f"    vt[{p:>3}] = {lut_v[p]:.3f};")
     print("}\n")
 
     # Function 2: Current (Capacity) Table
-    print("void Battery::initCurrentTable() {")
+    print("void initCurrentTable() {")
     for p in range(101):
         # formatted to 1 decimal place for mAh precision
         print(f"    ct[{p:>3}] = {lut_c[p]:.1f};")
