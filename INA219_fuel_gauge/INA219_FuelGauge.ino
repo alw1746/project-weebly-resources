@@ -342,12 +342,25 @@ void clearPrefs() {
 }
 
 void savePrefs(float mahConsumed) {
-  preferences.putFloat("mahConsumed", mahConsumed);
-  Serial.printf("Saved mahConsumed:%.1f\r\n",mahConsumed);
+  //preferences.putFloat("mahConsumed", mahConsumed);
+  //Serial.printf("Saved mahConsumed:%.1f\r\n",mahConsumed);
+}
+
+void updateOLED(float voltage,int pcv,float totalConsumedMAH,int pcc,bool pwroff) {
+  char volt_s[20],bat_s[10],mAh_s[20];
+
+  totalConsumedMAH=fabs(totalConsumedMAH);      //make -0.000 positive
+  sprintf(volt_s,"%.2fV %d%%",voltage,pcv);
+  line(0,0,volt_s);
+  sprintf(mAh_s,"%.1fmAh",totalConsumedMAH);
+  line(0,20,mAh_s);
+  sprintf(bat_s,"%d%%",pcc);
+  line(0,40,bat_s);
+  if (pwroff)
+    line(50,40,"PWROFF");
 }
 
 void updateBatteryLevel(uint32_t period) {
-  char volt_s[20],bat_s[10],mAh_s[20];
   int pcv=0,pcc=0;
 
   float current = ina219.getCurrent_mA();
@@ -364,27 +377,9 @@ void updateBatteryLevel(uint32_t period) {
   }
   pcv=getCapacityPercentVoltage(voltage);            //remaining voltage capacity
   pcc=getCapacityPercentCurrent(totalConsumedMAH);   //remaining mah capacity
-  if (pcv >= 100) {                    //is voltage at or near full capacity%?
+  if (pcv == 100) {                    //is voltage at full capacity%?
     pcc=pcv;                           //yes set mahConsumed% to full capacity
-  } else {
-    if (pcc == 0 || pcv == 0) {
-      cutoffCounter++;
-      if (cutoffCounter > CHANGE_THRESHOLD) {
-        Serial.print("POWER CUTOFF at pcc ");
-        Serial.print(pcc);
-        Serial.print("%, pcv ");
-        Serial.print(voltage,2);
-        Serial.println("%");
-        line(50,40,"PWROFF");
-        savePrefs(totalConsumedMAH);
-        digitalWrite(CUTOFF_PIN,LOW);    //turn off P-chan MOSFET
-        while(1); // Stop
-      } 
-    } else {
-      cutoffCounter=0;
-    }
   }
-
   if ((pcv - pcc) >= MAX_VC_DEVIATION || (pcc - pcv) >= MAX_VC_DEVIATION) {
     deviationCounter++;
     if (deviationCounter > CHANGE_THRESHOLD) {
@@ -397,13 +392,23 @@ void updateBatteryLevel(uint32_t period) {
   } else {
     deviationCounter=0;
   }
-  totalConsumedMAH=fabs(totalConsumedMAH);      //make -0.000 positive
-  sprintf(volt_s,"%.2fV %d%%",voltage,pcv);
-  line(0,0,volt_s);
-  sprintf(mAh_s,"%.1fmAh",totalConsumedMAH);
-  line(0,20,mAh_s);
-  sprintf(bat_s,"%d%%",pcc);
-  line(0,40,bat_s);
+  if (totalConsumedMAH >= ct[100] || voltage <= vt[100]) {
+    cutoffCounter++;
+    if (cutoffCounter > CHANGE_THRESHOLD) {
+      Serial.print("POWER CUTOFF at pcc ");
+      Serial.print(pcc);
+      Serial.print("%, pcv ");
+      Serial.print(voltage,2);
+      Serial.println("%");
+      updateOLED(voltage,pcv,totalConsumedMAH,pcc,true);
+      savePrefs(totalConsumedMAH);
+      digitalWrite(CUTOFF_PIN,LOW);    //turn off P-chan MOSFET
+      while(1); // Stop
+    } 
+  } else {
+    cutoffCounter=0;
+  }
+  updateOLED(voltage,pcv,totalConsumedMAH,pcc,false);
 }
 
 void setup() {
@@ -413,7 +418,7 @@ void setup() {
   digitalWrite(CUTOFF_PIN,HIGH);    //turn on P-chan MOSFET
   Serial.begin(115200);
   delay(2000);
-  Serial.println("--------------- Fuel Gauge ------------------");
+  Serial.println("INA219 Fuel Gauge 1.0");
   preferences.begin("FuelGauge", false);
   Wire.begin();
   if (display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -440,7 +445,7 @@ void setup() {
   initVoltageTable();
   initCurrentTable();
   //clearPrefs();
-  loadPrefs(totalConsumedMAH);
+  //loadPrefs(totalConsumedMAH);
   if (totalConsumedMAH < 0.0) {   //if totalConsumedMAH is uninitialised
     pcv=getCapacityPercentVoltage(voltage);   //get remain% from voltage
     pcc=pcv;
