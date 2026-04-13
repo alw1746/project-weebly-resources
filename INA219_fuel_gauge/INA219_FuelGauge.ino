@@ -2,7 +2,7 @@
 Single cell lithium battery fuel gauge based on coulomb counting(1mAh = 3.6 coulombs) with
 drift compensated by voltage measurement. Voltage and current readings are provided
 by INA219 sensor. If capacity reaches 0, the load is disconnected by P-chan MOSFET
-to prevent damage. The mahConsumed value is saved to flash on every mAh change and restored on power up.
+to prevent damage. The mahConsumed value is saved to flash on every 5% change and restored on power up.
 Voltage and mahConsumed lookup tables are derived from profiling the battery through INA219_profiler
 sketch. The CSV output is processed by generate_lut.py which generates the C++ array initialisation
 code for use by the fuel gauge.
@@ -16,6 +16,7 @@ code for use by the fuel gauge.
 #define CUTOFF_VOLTAGE 3.5f
 #define MAX_VC_DEVIATION 5
 #define CHANGE_THRESHOLD 10
+#define BATTERY_IR 0.4f      //IR = (Voc - Vload)/load_current_A
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -32,6 +33,7 @@ unsigned long period2 = 1000;     //elapsed time(ms)
 bool timer2Enabled=false;         //event switch
 
 int cutoffCounter=0,deviationCounter=0;
+int lastSavePercent=0;
 float totalConsumedMAH = -1.0;       //uninitialised state
 float prevConsumedMAH  = -1.0;       //uninitialised state
 
@@ -342,8 +344,8 @@ void clearPrefs() {
 }
 
 void savePrefs(float mahConsumed) {
-  //preferences.putFloat("mahConsumed", mahConsumed);
-  //Serial.printf("Saved mahConsumed:%.1f\r\n",mahConsumed);
+  preferences.putFloat("mahConsumed", mahConsumed);
+  Serial.printf("Saved mahConsumed %.1f lastSavePercent %d%%\r\n",mahConsumed,lastSavePercent);
 }
 
 void updateOLED(float voltage,int pcv,float totalConsumedMAH,int pcc,bool pwroff) {
@@ -369,29 +371,15 @@ void updateBatteryLevel(uint32_t period) {
   // Calculate hours passed since last measurement
   float hours = period / 3600000.0;
   totalConsumedMAH += current * hours;
-  float diff=totalConsumedMAH - prevConsumedMAH;
-  if (diff >= 1.0f) {
-    savePrefs(totalConsumedMAH);      //save every 1mAh change to flash
-    prevConsumedMAH = totalConsumedMAH;
-    Serial.printf("%.2fV %.1fmAh\r\n",voltage,totalConsumedMAH);
-  }
-  pcv=getCapacityPercentVoltage(voltage);            //remaining voltage capacity
+  // --- IR COMPENSATION ---
+  // Convert current to Amps for the calculation: V_drop = I(amps) * R(ohms)
+  float current_A = current / 1000.0;
+  float compensatedVoltage = voltage + (current_A * BATTERY_IR);
+  pcv=getCapacityPercentVoltage(compensatedVoltage);            //remaining voltage capacity
   pcc=getCapacityPercentCurrent(totalConsumedMAH);   //remaining mah capacity
-  if (pcv == 100) {                    //is voltage at full capacity%?
-    pcc=pcv;                           //yes set mahConsumed% to full capacity
-  }
-  if ((pcv - pcc) >= MAX_VC_DEVIATION || (pcc - pcv) >= MAX_VC_DEVIATION) {
-    deviationCounter++;
-    if (deviationCounter > CHANGE_THRESHOLD) {
-      Serial.printf("pcc-pcv deviation exceed MAX_VC_DEVIATION, resync pcc %d%% to pcv %d%%\r\n",pcc,pcv);
-      pcc=pcv;
-      totalConsumedMAH=ct[100-pcc];
-      savePrefs(totalConsumedMAH);
-      prevConsumedMAH = totalConsumedMAH;
-    }
-  } else {
-    deviationCounter=0;
-  }
+  //if (pcv == 100) {                    //is voltage at full capacity%?
+  //  pcc=pcv;                           //yes resync to voltage%
+  //}
   if (totalConsumedMAH >= ct[100] || voltage <= vt[100]) {
     cutoffCounter++;
     if (cutoffCounter > CHANGE_THRESHOLD) {
@@ -403,10 +391,25 @@ void updateBatteryLevel(uint32_t period) {
       updateOLED(voltage,pcv,totalConsumedMAH,pcc,true);
       savePrefs(totalConsumedMAH);
       digitalWrite(CUTOFF_PIN,LOW);    //turn off P-chan MOSFET
-      while(1); // Stop
-    } 
+      esp_deep_sleep_start();    } 
   } else {
     cutoffCounter=0;
+  }
+  if ((pcv - pcc) >= MAX_VC_DEVIATION || (pcc - pcv) >= MAX_VC_DEVIATION) {
+    deviationCounter++;
+    if (deviationCounter > CHANGE_THRESHOLD) {
+      Serial.printf("pcc-pcv deviation exceed MAX_VC_DEVIATION, resync pcc %d%% to pcv %d%%\r\n",pcc,pcv);
+      pcc=pcv;       //resync to voltage%
+      totalConsumedMAH=ct[100-pcc];
+      savePrefs(totalConsumedMAH);
+      lastSavePercent = pcc;
+    }
+  } else {
+    deviationCounter=0;
+  }
+  if ((pcc-lastSavePercent) >= 5) {
+    savePrefs(totalConsumedMAH);      //save every 5% change to flash
+    lastSavePercent = pcc;
   }
   updateOLED(voltage,pcv,totalConsumedMAH,pcc,false);
 }
@@ -445,12 +448,13 @@ void setup() {
   initVoltageTable();
   initCurrentTable();
   //clearPrefs();
-  //loadPrefs(totalConsumedMAH);
+  loadPrefs(totalConsumedMAH);
   if (totalConsumedMAH < 0.0) {   //if totalConsumedMAH is uninitialised
     pcv=getCapacityPercentVoltage(voltage);   //get remain% from voltage
     pcc=pcv;
     totalConsumedMAH=ct[100-pcc];      //get actual mahConsumed from %consumed
     savePrefs(totalConsumedMAH);
+    lastSavePercent=pcc;
   }
   prevConsumedMAH = totalConsumedMAH;
   timer2=0;              //start now
@@ -465,5 +469,4 @@ void loop() {
     timer2 = millis();
     updateBatteryLevel(period);
   }
-
 }
