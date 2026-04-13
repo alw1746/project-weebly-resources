@@ -16,7 +16,7 @@ code for use by the fuel gauge.
 #define CUTOFF_VOLTAGE 3.5f
 #define MAX_VC_DEVIATION 5
 #define CHANGE_THRESHOLD 10
-#define BATTERY_IR 0.4f      //IR = (Voc - Vload)/load_current_A
+#define BATTERY_IR 0.4f      //internal resistance = (Voc - Vload)/load_current_A
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -380,15 +380,16 @@ void updateBatteryLevel(uint32_t period) {
   //if (pcv == 100) {                    //is voltage at full capacity%?
   //  pcc=pcv;                           //yes resync to voltage%
   //}
-  if (totalConsumedMAH >= ct[100] || voltage <= vt[100]) {
+  if (totalConsumedMAH > ct[100] || compensatedVoltage < vt[100]) {
     cutoffCounter++;
     if (cutoffCounter > CHANGE_THRESHOLD) {
       Serial.print("POWER CUTOFF at pcc ");
       Serial.print(pcc);
       Serial.print("%, pcv ");
-      Serial.print(voltage,2);
+      Serial.print(compensatedVoltage,2);
       Serial.println("%");
-      updateOLED(voltage,pcv,totalConsumedMAH,pcc,true);
+      pcc=0;
+      updateOLED(compensatedVoltage,pcv,totalConsumedMAH,pcc,true);
       savePrefs(totalConsumedMAH);
       digitalWrite(CUTOFF_PIN,LOW);    //turn off P-chan MOSFET
       esp_deep_sleep_start();    } 
@@ -411,7 +412,7 @@ void updateBatteryLevel(uint32_t period) {
     savePrefs(totalConsumedMAH);      //save every 5% change to flash
     lastSavePercent = pcc;
   }
-  updateOLED(voltage,pcv,totalConsumedMAH,pcc,false);
+  updateOLED(compensatedVoltage,pcv,totalConsumedMAH,pcc,false);
 }
 
 void setup() {
