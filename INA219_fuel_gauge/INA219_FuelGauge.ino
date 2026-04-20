@@ -396,7 +396,7 @@ void updateBatteryLevel(uint32_t period) {
   } else {
     cutoffCounter=0;
   }
-  if ((pcv - pcc) >= MAX_VC_DEVIATION || (pcc - pcv) >= MAX_VC_DEVIATION) {
+  if (abs(pcv - pcc) >= MAX_VC_DEVIATION) {
     deviationCounter++;
     if (deviationCounter > CHANGE_THRESHOLD) {
       Serial.printf("pcc-pcv deviation exceed MAX_VC_DEVIATION, resync pcc %d%% to pcv %d%%\r\n",pcc,pcv);
